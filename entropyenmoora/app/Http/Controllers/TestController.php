@@ -105,28 +105,25 @@ class TestController extends Controller
          
 
     // menghitung total nilai dispersi kriteria
-          $sumEachDispersiKriteria = [];
-          for ($i = 0; $i < $jumlahKriteria; $i++) {
-              $sumEachDispersiKriteria[$i] = array_sum(array_column($dispersiKriteria, $i));
-          }
-
-        dd($sumEachDispersiKriteria);
+              $sumEachDispersiKriteria = array_sum($dispersiKriteria);
         
-
+        
     // normalisasi nilai dispersi (Wj)
-    //     $normalisasiNilaiDispersi = [];
-    //     for ($i = 0; $i < $dispersiKriteria; $i++) {
-    //         $normalisasiNilaiDispersi[$i] =  $dispersiKriteria[$i]/$sumEachDispersiKriteria[$i];
-    //     }
+           $normalisasiNilaiDispersi = [];
+           for ($i = 0; $i < $jumlahKriteria; $i++) {
+               $normalisasiNilaiDispersi[$i] =  $dispersiKriteria[$i] / $sumEachDispersiKriteria;
+             
+           }
+    dd($normalisasiNilaiDispersi);
 
     // PERHITUNGAN MOORA
     // Normalisasi Matriks
         //  $normalisasiMatrixMoora = [];
         //  for ($i = 0; $i < $jumlahAlternatif; $i++) {
         //      for ($j = 0; $j < $jumlahKriteria; $j++) {
-        //         // if ($j == 0 || $j == 1 || $j == 2) {
+        //   
         //              $normalisasiMatrixMoora[$i][$j] = $matriksKeputusan[$i][$j] / (sqrt($matriksKeputusan[$i][$j]^2)) +sqrt($matriksKeputusan[$i+1][$j+1]^2);
-        //         // }
+        //         
         //      }
         //  }
          
