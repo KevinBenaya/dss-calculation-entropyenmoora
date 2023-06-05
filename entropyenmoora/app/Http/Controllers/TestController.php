@@ -102,13 +102,15 @@ class TestController extends Controller
          for ($i = 0; $i < $jumlahKriteria; $i++) {
              $dispersiKriteria[$i] = 1- ($entropyValue[$i]);
          }
-         dd($dispersiKriteria);
+         
 
     // menghitung total nilai dispersi kriteria
-        //  $sumEachDispersiKriteria = [];
-        //  for ($i = 0; $i < $dispersiKriteria; $i++) {
-        //      $sumEachDispersiKriteria[$i] = array_sum(array_column($dispersiKriteria, $i));
-        //  }
+          $sumEachDispersiKriteria = [];
+          for ($i = 0; $i < $jumlahKriteria; $i++) {
+              $sumEachDispersiKriteria[$i] = array_sum(array_column($dispersiKriteria, $i));
+          }
+
+        dd($sumEachDispersiKriteria);
         
 
     // normalisasi nilai dispersi (Wj)
