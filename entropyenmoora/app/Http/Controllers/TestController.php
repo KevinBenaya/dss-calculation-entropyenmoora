@@ -30,154 +30,133 @@ class TestController extends Controller
             [45,78,91,54,70,56,65,74,46,56],
             [56,97,56,57,96,79,57,52,86,33]
         ];
+        
+    $jumlahAlternatif = count($matriksKeputusan);
+    $jumlahKriteria = count($matriksKeputusan[0]);
 
-        $jumlahAlternatif = count($matriksKeputusan);
-        $jumlahKriteria = count($matriksKeputusan[0]);
+    // create array column with for
+    $arrayColumn = [];
+    for ($i = 0; $i < $jumlahKriteria; $i++) {
+        $arrayColumn[$i] = array_column($matriksKeputusan, $i);
+    }
 
-        // create array column with for
+    // create max and min each criteria
+    $max = [];
+    $min = [];
+    for ($i = 0; $i < $jumlahKriteria; $i++) {
+        $max[$i] = max($arrayColumn[$i]);
+        $min[$i] = min($arrayColumn[$i]);
+    }
 
-        $arrayColumn = [];
-        for ($i = 0; $i < $jumlahKriteria; $i++) {
-            $arrayColumn[$i] = array_column($matriksKeputusan, $i);
+    // normalisasi
+    $normalisasiMatrix = [];
+    for ($i = 0; $i < $jumlahAlternatif; $i++) {
+        for ($j = 0; $j < $jumlahKriteria; $j++) {
+            $normalisasiMatrix[$i][$j] = $matriksKeputusan[$i][$j] / $max[$j];
         }
+    }
 
-        // create max and min each criteria
-        $max = [];
-        //$min = [];
-        for ($i = 0; $i < $jumlahKriteria; $i++) {
-            $max[$i] = max($arrayColumn[$i]);
-           // $min[$i] = min($arrayColumn[$i]); for entropy method we don't use min value
+    // Jumlah kolom matriks normalisasi
+    $sumEachCriteria = [];
+    for ($i = 0; $i < $jumlahKriteria; $i++) {
+        $sumEachCriteria[$i] = array_sum(array_column($normalisasiMatrix, $i));
+    }
+
+    // nilai matriks normalisasi / $sumEachCriteria
+    $averageValue = [];
+    for ($i = 0; $i < $jumlahAlternatif; $i++) {
+        for ($j = 0; $j < $jumlahKriteria; $j++) {
+            $averageValue[$i][$j] = $normalisasiMatrix[$i][$j] / $sumEachCriteria[$j];
         }
+    }
 
-        // create normalisasi matrix by dividing each value with max if benefit (index = 0,1,2) or min if cost (index = 3,4)
-        $normalisasiMatrix = [];
-        for ($i = 0; $i < $jumlahAlternatif; $i++) {
-            for ($j = 0; $j < $jumlahKriteria; $j++) {
-                    $normalisasiMatrix[$i][$j] = $matriksKeputusan[$i][$j] / $max[$j];
-            /*    } else {
-                    $normalisasiMatrix[$i][$j] = $min[$j] / $matriksKeputusan[$i][$j];
-            */  
+    // $averageValue * LN($averageValue)
+    $ln = [];
+    for ($i = 0; $i < $jumlahAlternatif; $i++) {
+        for ($j = 0; $j < $jumlahKriteria; $j++) {
+            $ln[$i][$j] = $averageValue[$i][$j] * log($averageValue[$i][$j]);
+        }
+    }
+
+    // sum each column of ln
+    $sumLn = [];
+    for ($i = 0; $i < $jumlahKriteria; $i++) {
+        $sumLn[$i] = array_sum(array_column($ln, $i));
+    }
+
+    // -1 / LN($jumlahAlternatif) * $sumLn
+    $result = array_map(function ($value) use ($jumlahAlternatif) {
+        return (-1 / log($jumlahAlternatif)) * $value;
+    }, $sumLn);
+
+    // 1 - $result
+    $dispresi = array_map(function ($value) {
+        return 1 - $value;
+    }, $result);
+
+    // sum $dispresi
+    $sumDispresi = array_sum($dispresi);
+    
+    // $dispresi / $sumDispresi
+    $resultDispresi = array_map(function ($value) use ($sumDispresi) {
+        return $value / $sumDispresi;
+    }, $dispresi);
+
+
+    // matrix ^ 2
+    $pow = [];
+    for ($i = 0; $i < $jumlahAlternatif; $i++) {
+        for ($j = 0; $j < $jumlahKriteria; $j++) {
+            $pow[$i][$j] = pow($matriksKeputusan[$i][$j], 2);
+        }
+    }
+    
+    // sum each column of pow
+    $sumPow = [];
+    for ($i = 0; $i < $jumlahKriteria; $i++) {
+        $sumPow[$i] = array_sum(array_column($pow, $i));
+    }
+
+    // sqrt sumPow
+    $sqrt = array_map(function ($value) {
+        return sqrt($value);
+    }, $sumPow);
+
+    // matrix / sqrt
+    $resultMatrix = [];
+    for ($i = 0; $i < $jumlahAlternatif; $i++) {
+        for ($j = 0; $j < $jumlahKriteria; $j++) {
+            $resultMatrix[$i][$j] = $matriksKeputusan[$i][$j] / $sqrt[$j];
+        }
+    }
+
+    // $resultMatrix * $resultDispresi
+    $resultMatrixDispresi = [];
+    for ($i = 0; $i < $jumlahAlternatif; $i++) {
+        for ($j = 0; $j < $jumlahKriteria; $j++) {
+            if ($j == 0 || $j == 1 || $j == 2 || $j == 3 || $j == 6 || $j == 7 || $j == 9) {
+                $resultMatrixDispresi[$i][$j] = $resultMatrix[$i][$j] * $resultDispresi[$j];
+            } else {
+                $resultMatrixDispresi[$i][$j] = -1 * $resultMatrix[$i][$j] * $resultDispresi[$j];
             }
         }
-       
-       // sum each column of normalisasi matrix
-         $sumEachCriteria = [];
-         for ($i = 0; $i < $jumlahKriteria; $i++) {
-            $sumEachCriteria[$i] = array_sum(array_column($normalisasiMatrix, $i));
-         }
-
-    // matriks Aij
-          $matriksAij = [];
-          for ($i = 0; $i < $jumlahAlternatif; $i++) {
-             for ($j = 0; $j < $jumlahKriteria; $j++) {
-                    $matriksAij[$i][$j] = $normalisasiMatrix[$i][$j] / $sumEachCriteria[$j];
-             }
-          }
-        
-
-    // matriks entropy - menghitung total - menghitung nilai entropy
-            $matriksEntropy = [];
-            for ($i = 0; $i < $jumlahAlternatif; $i++) {
-             for ($j = 0; $j < $jumlahKriteria; $j++) {
-                     $matriksEntropy[$i][$j] = $matriksAij[$i][$j] * log($matriksAij[$i][$j]);
-             }
-         }
+    }
     
 
-    // sum each column of matriks entropy
-         $sumEachMatriksEntropy = [];
-         for ($i = 0; $i < $jumlahKriteria; $i++) {
-             $sumEachMatriksEntropy[$i] = array_sum(array_column($matriksEntropy, $i));
-         }
-    
+    // sum each row of $resultMatrixDispresi
+    $sumResultMatrixDispresi = [];
+    for ($i = 0; $i < $jumlahAlternatif; $i++) {
+        $sumResultMatrixDispresi[$i] = array_sum($resultMatrixDispresi[$i]);
+    }
 
-    // menghitung nilai entropy
-         $entropyValue = [];
-         for ($i = 0; $i < $jumlahKriteria; $i++) {
-             $entropyValue[$i] = (-1/log($jumlahAlternatif))* $sumEachMatriksEntropy[$i];
-         }
 
-    // menghitung nilai dispersi kriteria (Dj)
-         $dispersiKriteria = [];
-         for ($i = 0; $i < $jumlahKriteria; $i++) {
-             $dispersiKriteria[$i] = 1- ($entropyValue[$i]);
-         }
-         
+    // sort $sumResultMatrixDispresi with key
+    arsort($sumResultMatrixDispresi);
 
-    // menghitung total nilai dispersi kriteria
-              $sumEachDispersiKriteria = array_sum($dispersiKriteria);
-            
-        
-    // normalisasi nilai dispersi (Wj)
-           $normalisasiNilaiDispersi = [];
-           for ($i = 0; $i < $jumlahKriteria; $i++) {
-               $normalisasiNilaiDispersi[$i] =  $dispersiKriteria[$i] / $sumEachDispersiKriteria;
-             
-           }
-    
+    $rank = $sumResultMatrixDispresi;
+    array_multisort($rank, SORT_DESC);
 
-    // PERHITUNGAN MOORA
-
-     $sumEachCriteriaKuadrat = [];
-     for ($i = 0; $i < $jumlahKriteria; $i++) {
-        $sumEachCriteriaKuadrat[$i] = array_sum(array_column($matriksKeputusan, $i));
-     }
-
-     $CriteriaKuadrat = [];
-     for ($i = 0; $i < $jumlahKriteria; $i++) {
-         $CriteriaKuadrat[$i] = pow($matriksKeputusan[$i][$j], 2);
-     }
-
-    //  $sqrtCriteriaKuadrat = [];
-    //  for ($i = 0; $i < $jumlahKriteria; $i++) {
-    //      $sqrtCriteriaKuadrat[$i] = sqrt($CriteriaKuadrat[$i]);
-    //   }
-
-    // Normalisasi Matriks
-        //  $normalisasiMatrixMoora = [];
-        //   for ($i = 0; $i < $jumlahAlternatif; $i++) {
-        //       for ($j = 0; $j < $jumlahKriteria; $j++) {
-        //               $normalisasiMatrixMoora[$i][$j] = $matriksKeputusan[$i][$j]; 
-        //       }
-        //   }
-    //     $CriteriaKuadrat = [];
-    //  for ($i = 0; $i < $jumlahKriteria; $i++) {
-    //     $CriteriaKuadrat[$i] = pow($matriksKeputusan[$i], 2);
-    // }
-    //     $sumEachCriteriaKuadrat = [];
-    // for ($i = 0; $i < $jumlahKriteria; $i++) {
-    //     $sumEachCriteriaKuadrat[$i] = array_sum(array_column($CriteriaKuadrat, $i));
-    // }
-    // $sqrtCriteriaKuadrat = [];
-    // for ($i = 0; $i < $jumlahKriteria; $i++) {
-    //     $sqrtCriteriaKuadrat[$i] = sqrt($sumEachCriteriaKuadrat[$i]);
-    //     }
-          dd($CriteriaKuadrat);
-
-         //(sqrt($matriksKeputusan[$i][$j]^2))+sqrt($matriksKeputusan[$i+1][$j+1]^2)
-
-    //     // Perhitungan pembobotan - total nilai- serta ranking
-    //     $matriksPembobotan = [];
-    //     for ($i = 0; $i < $normalisasiMatrixMoora; $i++) {
-    //         for ($j = 0; $j < $normalisasiMatrixMoora; $j++) {
-    //             if ($j == 0 || $j == 1 || $j == 2) {
-    //                 $matriksPembobotan[$i][$j] = $matriksKeputusan[$i][$j] * $normalisasiNilaiDispersi[$i];
-    //         /*    } else {
-    //                 $normalisasiMatrix[$i][$j] = $min[$j] / $matriksKeputusan[$i][$j];
-    //         */   }
-    //         }
-    //     }
-
-    //     // menghitung total pembobotan
-    //     $sumEachPembobotan = [];
-    //     for ($i = 0; $i < $matriksPembobotan; $i++) {
-    //         $sumEachPembobotan[$i] = array_sum(array_column($matriksPembobotan, $i));
-    //     }
-
-    //     // perangkingan
-    //     arsort($sumEachPembobotan);
-
-    //     dd($sumEachPembobotan);
-    // }
+     dd($sumResultMatrixDispresi, $rank);
     }
 }
+
