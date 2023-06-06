@@ -106,7 +106,7 @@ class TestController extends Controller
 
     // menghitung total nilai dispersi kriteria
               $sumEachDispersiKriteria = array_sum($dispersiKriteria);
-        
+            
         
     // normalisasi nilai dispersi (Wj)
            $normalisasiNilaiDispersi = [];
@@ -114,19 +114,45 @@ class TestController extends Controller
                $normalisasiNilaiDispersi[$i] =  $dispersiKriteria[$i] / $sumEachDispersiKriteria;
              
            }
-    dd($normalisasiNilaiDispersi);
+    
 
     // PERHITUNGAN MOORA
+
+     $sumEachCriteriaKuadrat = [];
+     for ($i = 0; $i < $jumlahKriteria; $i++) {
+        $sumEachCriteriaKuadrat[$i] = array_sum(array_column($matriksKeputusan, $i));
+     }
+
+     $CriteriaKuadrat = [];
+     for ($i = 0; $i < $jumlahKriteria; $i++) {
+         $CriteriaKuadrat[$i] = pow($matriksKeputusan[$i][$j], 2);
+     }
+
+    //  $sqrtCriteriaKuadrat = [];
+    //  for ($i = 0; $i < $jumlahKriteria; $i++) {
+    //      $sqrtCriteriaKuadrat[$i] = sqrt($CriteriaKuadrat[$i]);
+    //   }
+
     // Normalisasi Matriks
         //  $normalisasiMatrixMoora = [];
-        //  for ($i = 0; $i < $jumlahAlternatif; $i++) {
-        //      for ($j = 0; $j < $jumlahKriteria; $j++) {
-        //   
-        //              $normalisasiMatrixMoora[$i][$j] = $matriksKeputusan[$i][$j] / (sqrt($matriksKeputusan[$i][$j]^2)) +sqrt($matriksKeputusan[$i+1][$j+1]^2);
-        //         
-        //      }
-        //  }
-         
+        //   for ($i = 0; $i < $jumlahAlternatif; $i++) {
+        //       for ($j = 0; $j < $jumlahKriteria; $j++) {
+        //               $normalisasiMatrixMoora[$i][$j] = $matriksKeputusan[$i][$j]; 
+        //       }
+        //   }
+    //     $CriteriaKuadrat = [];
+    //  for ($i = 0; $i < $jumlahKriteria; $i++) {
+    //     $CriteriaKuadrat[$i] = pow($matriksKeputusan[$i], 2);
+    // }
+    //     $sumEachCriteriaKuadrat = [];
+    // for ($i = 0; $i < $jumlahKriteria; $i++) {
+    //     $sumEachCriteriaKuadrat[$i] = array_sum(array_column($CriteriaKuadrat, $i));
+    // }
+    // $sqrtCriteriaKuadrat = [];
+    // for ($i = 0; $i < $jumlahKriteria; $i++) {
+    //     $sqrtCriteriaKuadrat[$i] = sqrt($sumEachCriteriaKuadrat[$i]);
+    //     }
+          dd($CriteriaKuadrat);
 
          //(sqrt($matriksKeputusan[$i][$j]^2))+sqrt($matriksKeputusan[$i+1][$j+1]^2)
 
